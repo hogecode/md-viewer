@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import snackReducer from "@/features/snackSlice"
+import authReducer from "@/features/authSlice"
 import storage from 'redux-persist/lib/storage';
 import { persistReducer, persistStore } from 'redux-persist';
 import { combineReducers } from 'redux';
@@ -11,8 +12,10 @@ const persistConfig = {
   whitelist: [''],
 };
 
+// reducerをまとめる
 const rootReducer = combineReducers({
   snack: snackReducer,
+  auth: authReducer,
 });
 
 // localStorageを利用してリデューサを永続化
