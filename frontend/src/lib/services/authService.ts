@@ -2,10 +2,14 @@ import { Auth } from 'aws-amplify';
 
 export const login = async (email: string, password: string) => {
   return Auth.signIn(email, password);
+  // authSlice(login)の呼び出し
+  // snackSliceの呼び出し
 };
 
 export const logout = async () => {
   return Auth.signOut();
+  // authSliceの呼び出し
+  // snackSliceの呼び出し
 };
 
 export const getCurrentUser = async () => {
