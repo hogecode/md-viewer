@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 
-const issuer = `https://cognito-idp.${process.env.COGNITO_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`;
-const clientId = process.env.COGNITO_CLIENT_ID!;
+const issuer = `https://cognito-idp.${process.env.NEXT_PUBLIC_AWS_REGION}.amazonaws.com/${process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID}`;
+const clientId = process.env.NEXT_PUBLIC_COGNITO_APP_CLIENT_ID!;
 const jwks = createRemoteJWKSet(new URL(`${issuer}/.well-known/jwks.json`));
 
 // 適用対象のパスを限定

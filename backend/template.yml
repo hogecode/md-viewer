@@ -1,4 +1,4 @@
-yAWSTemplateFormatVersion: "2010-09-09"
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 
 #Parameters:
@@ -179,6 +179,14 @@ Outputs:
     Description: "S3 Bucket Name"
     Value: !Ref S3Bucket
 
-#  RDBConnectionString:
-#    Description: "RDS Database Connection String"
-#    Value: !Sub "${RDBDatabase.Endpoint.Address}"
+  CognitoUserPoolId:
+    Description: "Cognito User Pool Id"
+    Value: !Ref CognitoUserPool
+
+  CognitoUserPoolClientId:
+    Description: "Cognito User Pool Client Id"
+    Value: !Ref CognitoUserPoolClient
+
+  RDBEndpointAddress:
+    Description: "RDS Database Connection String"
+    Value: !Sub "${RDBDatabase.Endpoint.Address}"
