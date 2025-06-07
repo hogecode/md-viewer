@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
+#Parameters:
+#  RDBPassword:
+#    Type: String
+#    NoEcho: true  # パスワードが表示されないように
+#    Description: "The RDB master password"
+
+Globals:
+  # Lambdaの共通の設定
+  Function:
+    Runtime: nodejs18.x
+    MemorySize: 128
+    Timeout: 15
+
+Resources:
+  # 署名付きURLを生成するLambda関数
+  SignedUrlLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Handler: src/handlers/signedUrlHandler.handler
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Ref S3Bucket
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            RestApiId: 
+              Ref: ApiGateway
+            Path: /generate-signed-url
+            Method: GET
+
+  # S3トリガーによるメタデータ処理、XSS対策、RDB保存を行うLambda関数
+  S3TriggerLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Handler: src/handlers/s3TriggerHandler.handler
+      Events:
+        S3Event:
+          Type: S3
+          Properties:         
+            Bucket: !Ref S3Bucket
+            Events: s3:ObjectCreated:*
+
+  # 投稿の一覧を取得するLambda関数
+  PostListLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Handler: src/handlers/postListHandler.handler
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            RestApiId: 
+              Ref: ApiGateway          
+            Path: /posts
+            Method: GET
+            #AuthorizationType: "COGNITO_USER_POOLS"
+            #Authorizer:
+              #Ref: CognitoUserPoolAuthorizer  
+
+  # 投稿IDを指定して投稿を取得するLambda関数
+  GetPostLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Handler: src/handlers/getPostHandler.handler
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            RestApiId: 
+              Ref: ApiGateway          
+            Path: /posts/{id}
+            Method: GET
+            #AuthorizationType: COGNITO_USER_POOLS
+            #Authorizer:
+              #Ref: CognitoUserPoolAuthorizer              
+
+  # 投稿IDを指定して投稿を削除するLambda関数
+  DeletePostLambdaFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      Handler: src/handlers/deletePostHandler.handler
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            RestApiId: 
+              Ref: ApiGateway          
+            Path: /posts/{id}
+            Method: DELETE
+            #AuthorizationType: COGNITO_USER_POOLS # Google OAuthとの連携でCognito User Poolを使う
+            #Authorizer:
+              #Ref: CognitoUserPoolAuthorizer  
+
+  # API Gateway の設定
+  ApiGateway:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      Name: "MyApi"
+      StageName: "prod"
+
+  # Cognito User Pool Authorizer 設定
+  CognitoUserPoolAuthorizer:
+    Type: "AWS::ApiGateway::Authorizer"
+    Properties:
+      Name: "CognitoAuthorizer"
+      IdentitySource: "method.request.header.Authorization"  # トークンをヘッダーから取得
+      ProviderARNs:
+        - Fn::GetAtt: [ CognitoUserPool, Arn ]
+      RestApiId:
+        Ref: ApiGateway
+      Type: COGNITO_USER_POOLS      
+
+  # Cognito User Pool (Google OAuth認証用)
+  CognitoUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: "MyUserPool"
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: "OFF"
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true # シンボルも必須
+
+  # Cognito User Pool Client (パスワード認証)
+  CognitoUserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      ClientName: "MyUserPoolClient"
+      GenerateSecret: false
+      SupportedIdentityProviders:
+        - "COGNITO"
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH # パスワード認証を許可
+        - ALLOW_REFRESH_TOKEN_AUTH # リフレッシュトークンを許可
+        - ALLOW_USER_SRP_AUTH # SRP認証を許可
+
+  # RDSデータベースインスタンス
+  RDBDatabase:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBInstanceIdentifier: "MyPostgresDatabase"
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      MasterUsername: "myadmin"
+      MasterUserPassword: password # !Ref RDBPassword
+      DBName: "mydb"
+      BackupRetentionPeriod: 7
+      MultiAZ: false
+
+  # S3バケット（ファイル保存用）
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: "my-file-bucket"
+
+Outputs:
+  ApiGatewayUrl:
+    Description: "API Gateway URL"
+    Value: !Sub "https://${ApiGateway.RestApiId}.execute-api.${AWS::Region}.amazonaws.com/prod"
+
+  S3BucketName:
+    Description: "S3 Bucket Name"
+    Value: !Ref S3Bucket
+
+#  RDBConnectionString:
+#    Description: "RDS Database Connection String"
+#    Value: !Sub "${RDBDatabase.Endpoint.Address}"

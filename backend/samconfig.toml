@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "my-sam-app"
+s3_prefix = "my-sam-app"
+s3_bucket = "my-sam-artifacts-202506"
+region = "ap-northeast-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+disable_rollback = false
