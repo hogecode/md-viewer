@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: "2010-09-09"
+yAWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 
 #Parameters:
@@ -19,7 +19,8 @@ Resources:
   SignedUrlLambdaFunction:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/handlers/signedUrlHandler.handler
+      CodeUri: dist/handlers/ # 後でフォルダ分ける
+      Handler: dist/handlers/signedUrlHandler.handler
       Environment:
         Variables:
           S3_BUCKET_NAME: !Ref S3Bucket
@@ -36,7 +37,8 @@ Resources:
   S3TriggerLambdaFunction:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/handlers/s3TriggerHandler.handler
+      CodeUri: dist/handlers/
+      Handler: dist/handlers/s3TriggerHandler.handler
       Events:
         S3Event:
           Type: S3
@@ -48,7 +50,8 @@ Resources:
   PostListLambdaFunction:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/handlers/postListHandler.handler
+      CodeUri: dist/handlers/
+      Handler: dist/handlers/postListHandler.handler
       Events:
         ApiGateway:
           Type: Api
@@ -65,7 +68,8 @@ Resources:
   GetPostLambdaFunction:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/handlers/getPostHandler.handler
+      CodeUri: dist/handlers/
+      Handler: dist/handlers/getPostHandler.handler
       Events:
         ApiGateway:
           Type: Api
@@ -82,7 +86,8 @@ Resources:
   DeletePostLambdaFunction:
     Type: "AWS::Serverless::Function"
     Properties:
-      Handler: src/handlers/deletePostHandler.handler
+      CodeUri: dist/handlers/
+      Handler: dist/handlers/deletePostHandler.handler
       Events:
         ApiGateway:
           Type: Api
