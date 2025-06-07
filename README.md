@@ -27,46 +27,60 @@
 
 **フォルダ構造**
 ```plaintext
-- src
-    - assets
-    - components
-        - LoginForm.tsx
-        - RegisterForm.tsx # zod, formikの利用
-        - FileUpload.tsx
-        - FileList.tsx
-        - SearchBar.tsx
-        - Header.tsx
-        - InfinitePagination.tsx
-        - UserAvater.tsx # ログアウト
-    - features # RTKスライス
-        - authSlice.ts # ログイン、ログアウト
-        - fileSlice.ts # 2ペイン構造のため、ファイルIDの所持
-        - searchSlice.ts # 検索条件の所持
-        - snackSlice.ts # メッセージ表示
-    - hooks
-    - pages
-        - templatePage.tsx
-        - LoginPage.tsx
-        - RegisterPage.tsx
-        - Dashboard.tsx # クエリパラメータの利用
-    - services # API, Amplifyサービス
-        - authService.ts # 登録、ログイン、ログアウト、スナック
-        - fileValidationService.ts # 検証、xss対策, zodの利用
-        - fileUploadService.ts
-        - searchService.ts
-        - snackMessageService.ts
-    - utils
-        - validateEmail.ts
-        - formatFileSize.ts
-        - handleError.ts
-    - config
-        - awsConfig.ts
-        - apiConfig.ts
-    - App.tsx
-    - main.tsx
-- public
-- vite.config.ts
+- public/                      # 静的ファイル（画像やフォントなど）
+- src/
+  - assets/                   # アイコンや画像
+  - components/               # 再利用可能な UI コンポーネント
+    - LoginForm.tsx
+    - RegisterForm.tsx
+    - FileUpload.tsx
+    - FileList.tsx
+    - SearchBar.tsx
+    - Header.tsx
+    - InfinitePagination.tsx
+    - UserAvatar.tsx
+  - features/                 # Redux Toolkit slices
+    - auth/
+      - authSlice.ts
+    - file/
+      - fileSlice.ts
+    - search/
+      - searchSlice.ts
+    - snack/
+      - snackSlice.ts
+  - hooks/                    # カスタムReact Hooks
+  - lib/                      # 各種サービス, util的な処理
+    - services/
+      - authService.ts
+      - fileUploadService.ts
+      - fileValidationService.ts
+      - searchService.ts
+      - snackMessageService.ts
+    - utils/
+      - validateEmail.ts
+      - formatFileSize.ts
+      - handleError.ts
+    - config/
+      - awsConfig.ts
+      - apiConfig.ts
+  - app/                      # Next.js App Router pages
+    - login/
+      - page.tsx             
+    - register/
+      - page.tsx             
+    - dashboard/
+      - page.tsx             # クエリでパラメータ取得
+    - template/
+      - page.tsx             # templatePage.tsx に相当
+  - store/                    # Redux store 設定
+    - index.ts
+  - styles/                   # グローバル/モジュールCSS
+  - middleware.ts             # Next.js middleware（任意）
 - .env.example
+- next.config.js
+- tsconfig.json
+- package.json
+- .gitignore
 ```
 
 ### バックエンド
