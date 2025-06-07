@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity()
 export class Post {
@@ -16,4 +16,14 @@ export class Post {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
+
+    // ts_vector は全文検索用（PostgreSQL 専用）
+  @Column({
+    type: 'tsvector',
+    select: false,
+    nullable: true,
+  })
+  @Index({ spatial: true }) // GINインデックスは手動で作成
+  documentWithWeights?: string;
 }
+
