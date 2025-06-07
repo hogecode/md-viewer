@@ -1,4 +1,4 @@
-import { AppDataSource } from "./config/typeormConfig";
+import { AppDataSource } from "./typeorm/typeormConfig";
 import { initializeContainer } from "./inversify.config";
 import * as dotenv from 'dotenv';
 

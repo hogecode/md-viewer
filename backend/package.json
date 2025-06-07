@@ -20,6 +20,7 @@
     "typeorm": "^0.3.24"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
     "@types/node": "^22.15.30",
     "typescript": "^5.8.3"
   }
