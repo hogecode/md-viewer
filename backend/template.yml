@@ -119,7 +119,7 @@ Resources:
         Ref: ApiGateway
       Type: COGNITO_USER_POOLS      
 
-  # Cognito User Pool (Google OAuth認証用)
+  # Cognito User Pool (パスワード認証)
   CognitoUserPool:
     Type: "AWS::Cognito::UserPool"
     Properties:
