@@ -2,79 +2,93 @@
 
 このアプリは、markdownをWUSIWUGエディタでの編集や、ファイルアップロードを通じてアップロードし、全文検索で簡単に表示することを目的にしています。
 
-まだ殆ど開発できていないので動作はしません。以下はあくまで予定です。
+まだ殆ど開発できていないので途中です。以下はあくまで予定です。
+
+### 仕様手順
+
+1. バックエンドの初期設定後、SAMをビルド
+
+**前提条件**
+- `sam-cli`がインストールされていること
+- `aws-configure`で認証情報が設定されていること
+```bash
+cd backend
+npm install
+npm run build
+sam build
+```
+
+2. SAMをデプロイ
+```bash
+sam deploy
+```
+
+3. フロントの環境変数の設定
+`sam deploy`の出力を参考にして設定
+```bash
+cd frontend
+cp .env.example .env
+```
+
+4. フロントの起動
+```bash
+npm run serve
+```
 
 ### フロント
+**機能**
 - ユーザー登録、ログイン
 - ログイン後にs3にアップロード
     - gDriveとoauth連携し、選択してアップロード
-- 一覧表示
+- 一覧表示(ページネーション)
 - 全文検索
 
 **使用技術** 
+- nextjs
+- shadcnui + tailwind # UIのカスタム性を重視
+- atomicdesign + MVVM
 - rtk
 - amplify
     - (S3.put(), API.get(), API.post()など) 
-    - S3メタデータの利用(userId) 
+    - S3メタデータを利用してアップロード(userId) 
     - amplifySDKでトークンは自動管理される
-- s3にデプロイ
-
-**手順**
-- amplifyでcognitoとの連携
-- ルーティング設定
-- rtkスライスの作成
+- dockerイメージを作成し、ECSにデプロイ
 
 **フォルダ構造**
 ```plaintext
-- public/                      # 静的ファイル（画像やフォントなど）
+- public/                     # 静的ファイル（画像やフォントなど）
 - src/
   - assets/                   # アイコンや画像
-  - components/               # 再利用可能な UI コンポーネント
-    - LoginForm.tsx
-    - RegisterForm.tsx
-    - FileUpload.tsx
-    - FileList.tsx
-    - SearchBar.tsx
-    - Header.tsx
-    - InfinitePagination.tsx
-    - UserAvatar.tsx
+  - components/      
+    - atom/
+    - molecules/
+    - organisms/
   - features/                 # Redux Toolkit slices
-    - auth/
       - authSlice.ts
-    - file/
       - fileSlice.ts
-    - search/
       - searchSlice.ts
-    - snack/
       - snackSlice.ts
   - hooks/                    # カスタムReact Hooks
-  - lib/                      # 各種サービス, util的な処理
+  - lib/                      # 各種サービス
     - services/
       - authService.ts
       - fileUploadService.ts
       - fileValidationService.ts
       - searchService.ts
       - snackMessageService.ts
-    - utils/
-      - validateEmail.ts
-      - formatFileSize.ts
-      - handleError.ts
     - config/
-      - awsConfig.ts
-      - apiConfig.ts
+      - amplifyConfig.ts
   - app/                      # Next.js App Router pages
     - login/
       - page.tsx             
     - register/
       - page.tsx             
     - dashboard/
-      - page.tsx             # クエリでパラメータ取得
-    - template/
-      - page.tsx             # templatePage.tsx に相当
+      - page.tsx              # クエリでパラメータ取得
   - store/                    # Redux store 設定
     - index.ts
   - styles/                   # グローバル/モジュールCSS
-  - middleware.ts             # Next.js middleware（任意）
+  - middleware.ts   
 - .env.example
 - next.config.js
 - tsconfig.json
@@ -86,24 +100,17 @@
 **エンドポイント** 
 - 署名付きURL生成 
 - s3トリガーlambda 
-    - メタデータからユーザーIDを取得し、mdをrdbに保存 
+    - S3メタデータからユーザーIDを取得し、mdをrdbに保存 
     - XSS対策(dompurify)    
 - 一覧表示用 
-    - event.requestContext.authorizerでlambda認証 
+    - event.requestContext.authorizerでユーザーIDを取得
 - posts/id(GET, DELETE) 
 
 **使用技術** 
-- sam
-- inversifyjs, typeorm 
-- lambda, cognito, apigateway, psql
-- openAPI
-
-**手順**
-- samTemplate.yamlの作成
-- handlersの連携
-- inversifyの設定
-- RDBとの連携
-- 実装
+- sam # AWSプロビジョニング用
+    - lambda, cognito, apigateway, psql
+- inversifyjs # DI用
+- typeorm # ORM
 
 **フォルダ構造**
 ```plaintext
@@ -117,23 +124,21 @@
     - services
         - postService.ts # 署名付きURL生成
         - s3Service.ts # メタデータ取得、削除
-    - utils
-        - auth.ts # event.requestContext.authorizerから取得
+        - userService.ts # event.requestContext.authorizerから取得
         - xssFilter.ts # mdをクリーンにする
-        - openApiValidator.ts # 省略
     - models
         - post.ts # ユーザID, タイトル, 本文
     - repositories
         - postRepository.ts # userIdとページネーションで取得
-    - config
-        - apiGateway.ts # 省略
-        - cognito.ts # 省略
-        - samTemplate.yaml
-        - typeormConfig.ts # 省略
+    - typeorm
+        - typeormConfig.ts 
+        - migration.sql # 全文検索インデックスはtypeormでは作成できないので手動で実行
 -tests
     - handlers
     - services
     - utils
-- inversify.config.ts # repository, serviceなど
+- inversify.config.ts # repository, serviceなどをDIで注入
+- bootstrap.ts # 各ハンドラーで実行する初期化処理
+- template.yml # SAMのファイル
 - .env.example
 ```
