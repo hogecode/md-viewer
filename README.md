@@ -24,6 +24,7 @@ sam deploy
 ```
 
 3. フロントの環境変数の設定
+
 `sam deploy`の出力を参考にして設定
 ```bash
 cd frontend
