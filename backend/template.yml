@@ -163,7 +163,7 @@ Resources:
   S3Bucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: "my-file-bucket"
+      BucketName: "my-s3-bucket"
 
 Outputs:
   ApiGatewayUrl:
